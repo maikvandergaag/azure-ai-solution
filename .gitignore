@@ -446,9 +446,6 @@ override.tf.json
 terraform.rc
 
 # Local variable files may contain secrets. Keep environment configuration versioned.
-*.tfvars
 *.tfvars.json
-!terraform/ibex-infra/environments/*.tfvars
-!terraform/ibex-infra/environments/*.tfvars.json
 
 # Keep .terraform.lock.hcl versioned to pin provider selections.
