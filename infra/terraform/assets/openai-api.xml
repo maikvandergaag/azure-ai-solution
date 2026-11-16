@@ -1,0 +1,58 @@
+<policies>
+    <inbound>
+        <base />
+        <!-- Extract model from request body for custom metrics -->
+        <set-variable name="model" value="@{
+            var body = context.Request.Body?.As&lt;JObject&gt;(preserveContent: true);
+            return body?[&quot;model&quot;]?.ToString() ?? &quot;unknown&quot;;
+        }" />
+        <choose>
+            <!-- Server-side engines (image generation, RAG embeddings) carry no Entra user token;
+                 they authenticate with the gateway key sent as a bearer token. -->
+            <when condition="@(context.Operation != null &amp;&amp; (context.Operation.UrlTemplate.StartsWith(&quot;/images&quot;) || context.Operation.UrlTemplate.Equals(&quot;/embeddings&quot;)))">
+                <check-header name="Authorization" failed-check-httpcode="401" failed-check-error-message="Invalid gateway key" ignore-case="false">
+                    <value>Bearer {{openwebui-gateway-key}}</value>
+                </check-header>
+            </when>
+            <otherwise>
+                <!-- Interactive calls require the gateway key and a valid Entra ID user token. -->
+                <check-header name="api-key" failed-check-httpcode="401" failed-check-error-message="Missing or invalid api-key" ignore-case="false">
+                    <value>{{openwebui-gateway-key}}</value>
+                </check-header>
+                <!-- Azure AD token validation - requires open_webui_app_id to be configured -->
+                <validate-azure-ad-token tenant-id="{{tenant-id}}">
+                    <audiences>
+                        <audience>{{openwebui-app-id}}</audience>
+                    </audiences>
+                    <required-claims>
+                        <claim name="roles" match="any">
+                            <value>admin</value>
+                            <value>user</value>
+                        </claim>
+                    </required-claims>
+                </validate-azure-ad-token>
+                <!-- AI Gateway: Emit token metrics for analytics with model dimension -->
+                <llm-emit-token-metric>
+                    <dimension name="Client IP address" value="@(context.Request.Headers.GetValueOrDefault(&quot;Authorization&quot;,&quot;&quot;).AsJwt()?.Claims.GetValueOrDefault(&quot;ipaddr&quot;, &quot;unknown&quot;))" />
+                    <dimension name="User ID" value="@(context.Request.Headers.GetValueOrDefault(&quot;Authorization&quot;,&quot;&quot;).AsJwt()?.Claims.GetValueOrDefault(&quot;preferred_username&quot;, &quot;anonymous&quot;))" />
+                    <dimension name="Model" value="@((string)context.Variables[&quot;model&quot;])" />
+                    <dimension name="Subscription ID" />
+                    <dimension name="API ID" />
+                </llm-emit-token-metric>
+                <!-- AI Gateway: Token rate limiting with prompt estimation -->
+                <llm-token-limit tokens-per-minute="50000" estimate-prompt-tokens="true" counter-key="@(context.Request.Headers.GetValueOrDefault(&quot;Authorization&quot;,&quot;&quot;).AsJwt()?.Claims.GetValueOrDefault(&quot;preferred_username&quot;, &quot;anonymous&quot;))" tokens-consumed-header-name="consumed-tokens" remaining-tokens-header-name="remaining-tokens" />
+            </otherwise>
+        </choose>
+        <set-backend-service backend-id="foundry-backend" />
+        <authentication-managed-identity resource="https://cognitiveservices.azure.com" />
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>

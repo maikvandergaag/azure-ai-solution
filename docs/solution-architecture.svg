@@ -1,0 +1,207 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1060" viewBox="0 0 1720 1060" role="img" aria-labelledby="title description">
+  <title id="title">Open WebUI on Azure solution architecture</title>
+  <desc id="description">Hub-and-spoke Azure architecture showing public HTTPS ingress through Application Gateway, private Open WebUI and API Management traffic, private Foundry and PostgreSQL endpoints, Azure Files, Key Vault, Entra ID, DNS, and monitoring.</desc>
+  <defs>
+    <linearGradient id="header" x1="0" x2="1">
+      <stop offset="0" stop-color="#073b70"/>
+      <stop offset="1" stop-color="#0878c9"/>
+    </linearGradient>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0878c9"/>
+    </marker>
+    <marker id="arrow-violet" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#7048c8"/>
+    </marker>
+    <marker id="arrow-gray" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8291a3"/>
+    </marker>
+    <style>
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #172b4d; }
+      .title { font-size: 34px; font-weight: 700; fill: #fff; }
+      .subtitle { font-size: 16px; fill: #e4f2ff; }
+      .zone-title { font-size: 21px; font-weight: 700; }
+      .section-title { font-size: 15px; font-weight: 700; fill: #526579; letter-spacing: .5px; }
+      .node-title { font-size: 16px; font-weight: 700; }
+      .node-copy { font-size: 13px; fill: #526579; }
+      .small { font-size: 12px; fill: #526579; }
+      .flow-label { font-size: 12px; font-weight: 600; fill: #36536f; }
+      .card { fill: #fff; stroke: #c9d8e6; stroke-width: 1.5; }
+      .pill { font-size: 11px; font-weight: 700; }
+    </style>
+  </defs>
+
+  <rect width="1720" height="1060" fill="#f5f8fc"/>
+  <rect width="1720" height="112" fill="url(#header)"/>
+  <text class="title" x="48" y="52" fill="#ffffff">Open WebUI on Azure</text>
+  <text class="subtitle" x="50" y="82" fill="#e4f2ff">Solution architecture · private hub-and-spoke networking · Microsoft Foundry via APIM</text>
+  <rect x="1430" y="37" width="236" height="38" rx="19" fill="#ffffff" opacity=".16"/>
+  <text x="1548" y="61" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">TERRAFORM · SINGLE STATE</text>
+
+  <!-- External user entry -->
+  <g>
+    <rect x="24" y="352" width="194" height="150" rx="18" fill="#fff" stroke="#d3dfeb" stroke-width="1.5"/>
+    <circle cx="121" cy="394" r="22" fill="#e5f3ff"/>
+    <path d="M121 382a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm-17 35c1-10 8-15 17-15s16 5 17 15" fill="none" stroke="#0878c9" stroke-width="3" stroke-linecap="round"/>
+    <text class="node-title" x="121" y="451" text-anchor="middle">Users</text>
+    <text class="node-copy" x="121" y="472" text-anchor="middle">HTTPS · custom domain</text>
+    <text class="small" x="121" y="490" text-anchor="middle">Custom DNS</text>
+  </g>
+
+  <!-- Hub boundary -->
+  <rect x="248" y="154" width="476" height="786" rx="24" fill="#eaf4ff" stroke="#1683d8" stroke-width="2.5"/>
+  <text class="zone-title" x="276" y="193" fill="#075a9c">Hub resource group · Hub VNet</text>
+  <text class="small" x="276" y="216">Public ingress, internal AI gateway, shared DNS and telemetry</text>
+
+  <text class="section-title" x="276" y="258">APPLICATION GATEWAY SUBNET</text>
+  <rect class="card" x="276" y="274" width="420" height="147" rx="15"/>
+  <rect x="294" y="292" width="52" height="48" rx="12" fill="#d9efff"/>
+  <path d="M307 304h26v23h-26zM311 300h18M311 331h18" fill="none" stroke="#0878c9" stroke-width="3" stroke-linejoin="round"/>
+  <text class="node-title" x="360" y="307">Application Gateway</text>
+  <text class="node-copy" x="360" y="331">Public Standard IP · HTTPS listener · TLS from Key Vault</text>
+  <text class="node-copy" x="360" y="352">HTTPS backend to Container Apps environment</text>
+  <rect x="294" y="376" width="113" height="25" rx="12" fill="#eaf4ff"/>
+  <text class="pill" x="350" y="393" text-anchor="middle" fill="#075a9c">PUBLIC EDGE</text>
+
+  <text class="section-title" x="276" y="462">API MANAGEMENT SUBNET</text>
+  <rect class="card" x="276" y="478" width="420" height="173" rx="15"/>
+  <rect x="294" y="497" width="52" height="48" rx="12" fill="#eee8ff"/>
+  <path d="M302 521h36M308 510l-8 11 8 11M330 510l8 11-8 11" fill="none" stroke="#7048c8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="node-title" x="360" y="510">API Management</text>
+  <text class="node-copy" x="360" y="534">Internal VNet mode · OpenAI-compatible API</text>
+  <text class="node-copy" x="360" y="555">Entra token validation · gateway key · token metrics</text>
+  <text class="node-copy" x="360" y="576">Managed identity → Foundry authorization</text>
+  <rect x="294" y="608" width="137" height="25" rx="12" fill="#eee8ff"/>
+  <text class="pill" x="362" y="625" text-anchor="middle" fill="#5937a7">PRIVATE GATEWAY</text>
+
+  <text class="section-title" x="276" y="691">SHARED HUB SERVICES</text>
+  <rect class="card" x="276" y="707" width="420" height="195" rx="15"/>
+  <text class="node-title" x="296" y="738">Private DNS zones</text>
+  <text class="node-copy" x="296" y="760">APIM · Container Apps · PostgreSQL · Foundry private links</text>
+  <line x1="296" y1="777" x2="676" y2="777" stroke="#e1e8ef"/>
+  <text class="node-title" x="296" y="807">Hub Log Analytics + App Insights</text>
+  <text class="node-copy" x="296" y="829">APIM diagnostics and application telemetry</text>
+  <text class="node-copy" x="296" y="851">DNS zones linked to hub and spoke VNets</text>
+  <rect x="296" y="866" width="150" height="23" rx="11" fill="#eaf4ff"/>
+  <text class="pill" x="371" y="882" text-anchor="middle" fill="#075a9c">HUB-OWNED DNS</text>
+
+  <!-- Spoke boundary -->
+  <rect x="754" y="154" width="616" height="786" rx="24" fill="#fff3e5" stroke="#e59b16" stroke-width="2.5"/>
+  <text class="zone-title" x="782" y="193" fill="#a65d00">App resource group · Spoke VNet</text>
+  <text class="small" x="782" y="216">VNet peering · hub private-endpoint subnet · workload services</text>
+
+  <text class="section-title" x="782" y="258">INTERNAL CONTAINER APPS ENVIRONMENT</text>
+  <rect x="782" y="274" width="560" height="190" rx="17" fill="#e7f4ff" stroke="#68b5e8" stroke-width="1.5"/>
+  <text class="small" x="804" y="300">Delegated ACA subnet · internal load balancer · public network access disabled</text>
+  <rect class="card" x="804" y="316" width="516" height="124" rx="13"/>
+  <rect x="822" y="333" width="52" height="48" rx="12" fill="#e4f8fc"/>
+  <path d="M835 344h26v25h-26zM841 338h14M841 375h14" fill="none" stroke="#1888a6" stroke-width="3" stroke-linejoin="round"/>
+  <text class="node-title" x="890" y="347">Open WebUI · Azure Container Apps</text>
+  <text class="node-copy" x="890" y="371">Entra OIDC sign-in · app ingress restricted behind Application Gateway</text>
+  <text class="node-copy" x="890" y="392">User-assigned identity reads Key Vault secrets and mounts Azure Files</text>
+  <text class="node-copy" x="890" y="413">Persistent chat, users and settings in PostgreSQL</text>
+
+  <text class="section-title" x="782" y="505">PRIVATE DATA AND SECRETS</text>
+  <rect class="card" x="782" y="521" width="560" height="157" rx="15"/>
+  <rect x="796" y="540" width="128" height="114" rx="12" fill="#f7fbff" stroke="#d9e5ef"/>
+  <circle cx="860" cy="568" r="17" fill="#d8efff"/>
+  <path d="M850 568h20M855 562v12M865 562v12" stroke="#0869ad" stroke-width="2"/>
+  <text class="node-title" x="860" y="604" text-anchor="middle" font-size="14">PostgreSQL</text>
+  <text class="small" x="860" y="624" text-anchor="middle">Flexible Server</text>
+  <text class="small" x="860" y="642" text-anchor="middle">Private endpoint</text>
+
+  <rect x="934" y="540" width="128" height="114" rx="12" fill="#f7fbff" stroke="#d9e5ef"/>
+  <path d="M976 566h44v26h-44zM983 559h30v7" fill="none" stroke="#1683d8" stroke-width="3" stroke-linejoin="round"/>
+  <text class="node-title" x="998" y="613" text-anchor="middle" font-size="14">Azure Files</text>
+  <text class="small" x="998" y="634" text-anchor="middle">SMB · identity</text>
+
+  <rect x="1072" y="540" width="128" height="114" rx="12" fill="#fffaf0" stroke="#ead9b5"/>
+  <path d="M1136 554l17 7v15c0 12-9 20-17 24-8-4-17-12-17-24v-15z" fill="#fff0bd" stroke="#c58a00" stroke-width="2"/>
+  <path d="M1131 576l4 4 8-9" fill="none" stroke="#a66c00" stroke-width="2.5" stroke-linecap="round"/>
+  <text class="node-title" x="1136" y="613" text-anchor="middle" font-size="14">Key Vault</text>
+  <text class="small" x="1136" y="634" text-anchor="middle">Secrets · TLS cert</text>
+
+  <rect x="1210" y="540" width="118" height="114" rx="12" fill="#f7fbff" stroke="#d9e5ef"/>
+  <circle cx="1269" cy="568" r="17" fill="#e7f5eb"/>
+  <path d="M1258 572h22M1261 566h16M1265 560h8" stroke="#16804a" stroke-width="2.5" stroke-linecap="round"/>
+  <text class="node-title" x="1269" y="604" text-anchor="middle" font-size="13">App Insights</text>
+  <text class="small" x="1269" y="624" text-anchor="middle">App logs</text>
+  <text class="small" x="1269" y="642" text-anchor="middle">and telemetry</text>
+
+  <text class="section-title" x="782" y="717">AI INFERENCE</text>
+  <rect x="782" y="733" width="560" height="169" rx="15" fill="#f4ecff" stroke="#a77ae6" stroke-width="1.5"/>
+  <rect x="800" y="752" width="524" height="104" rx="12" fill="#fff" stroke="#e0d1f6"/>
+  <circle cx="842" cy="789" r="20" fill="#eee2ff"/>
+  <path d="M832 796l10-17 10 17z" fill="#7048c8"/>
+  <text class="node-title" x="878" y="781">Microsoft Foundry · AI Services account</text>
+  <text class="node-copy" x="878" y="804">Private network access disabled · inference through private endpoint</text>
+  <text class="node-copy" x="878" y="826">Model deployments · APIM managed identity authorization</text>
+  <rect x="800" y="868" width="180" height="23" rx="11" fill="#eee2ff"/>
+  <text class="pill" x="890" y="884" text-anchor="middle" fill="#5937a7">PRIVATE LINK + DNS</text>
+
+  <!-- External identity and operations -->
+  <rect x="1400" y="154" width="296" height="786" rx="24" fill="#fff" stroke="#c9d8e6" stroke-width="2"/>
+  <text class="zone-title" x="1426" y="193">Identity &amp; operations</text>
+  <text class="small" x="1426" y="216">Tenant services and observability</text>
+
+  <rect x="1426" y="274" width="244" height="173" rx="15" fill="#f7fbff" stroke="#d3dfeb"/>
+  <circle cx="1548" cy="315" r="23" fill="#e5f3ff"/>
+  <path d="M1548 301l13 7v12c0 9-7 15-13 18-6-3-13-9-13-18v-12z" fill="none" stroke="#0878c9" stroke-width="2.5"/>
+  <text class="node-title" x="1548" y="365" text-anchor="middle">Microsoft Entra ID</text>
+  <text class="node-copy" x="1548" y="388" text-anchor="middle">OIDC authentication · app roles</text>
+  <text class="node-copy" x="1548" y="410" text-anchor="middle">User and admin access</text>
+
+  <rect x="1426" y="474" width="244" height="196" rx="15" fill="#f7fbff" stroke="#d3dfeb"/>
+  <circle cx="1548" cy="516" r="22" fill="#e7f5eb"/>
+  <path d="M1534 522h28M1537 515h22M1541 508h14" stroke="#16804a" stroke-width="3" stroke-linecap="round"/>
+  <text class="node-title" x="1548" y="562" text-anchor="middle">Monitoring</text>
+  <text class="node-copy" x="1548" y="585" text-anchor="middle">Log Analytics workspace</text>
+  <text class="node-copy" x="1548" y="607" text-anchor="middle">Application Insights</text>
+  <text class="node-copy" x="1548" y="637" text-anchor="middle">APIM and app telemetry</text>
+
+  <rect x="1426" y="697" width="244" height="205" rx="15" fill="#f7fbff" stroke="#d3dfeb"/>
+  <text class="node-title" x="1446" y="728">Identity-based access</text>
+  <circle cx="1449" cy="754" r="4" fill="#7048c8"/>
+  <text class="node-copy" x="1462" y="759">WebUI → Key Vault</text>
+  <circle cx="1449" cy="783" r="4" fill="#7048c8"/>
+  <text class="node-copy" x="1462" y="788">WebUI → Azure Files (SMB)</text>
+  <circle cx="1449" cy="812" r="4" fill="#7048c8"/>
+  <text class="node-copy" x="1462" y="817">APIM → Foundry</text>
+  <line x1="1446" y1="837" x2="1650" y2="837" stroke="#e1e8ef"/>
+  <text class="small" x="1446" y="861">No credentials shown.</text>
+  <text class="small" x="1446" y="880">Secrets remain in Key Vault.</text>
+
+  <!-- Flow lines, drawn over region backgrounds and under callouts -->
+  <path d="M218 425 H276" fill="none" stroke="#0878c9" stroke-width="4" marker-end="url(#arrow-blue)"/>
+  <rect x="220" y="397" width="52" height="22" rx="11" fill="#f5f8fc"/>
+  <text class="flow-label" x="246" y="412" text-anchor="middle">HTTPS</text>
+
+  <path d="M696 343 H804" fill="none" stroke="#0878c9" stroke-width="4" marker-end="url(#arrow-blue)"/>
+  <rect x="708" y="314" width="91" height="22" rx="11" fill="#f5f8fc"/>
+  <text class="flow-label" x="753" y="329" text-anchor="middle">HTTPS backend</text>
+
+  <path d="M804 425 H746 V565 H696" fill="none" stroke="#7048c8" stroke-width="4" marker-end="url(#arrow-violet)"/>
+  <rect x="711" y="478" width="83" height="22" rx="11" fill="#f5f8fc"/>
+  <text class="flow-label" x="752" y="493" text-anchor="middle">OpenAI API</text>
+
+  <path d="M696 594 H744 V803 H782" fill="none" stroke="#7048c8" stroke-width="4" marker-end="url(#arrow-violet)"/>
+  <rect x="706" y="679" width="100" height="22" rx="11" fill="#f5f8fc"/>
+  <text class="flow-label" x="756" y="694" text-anchor="middle">private inference</text>
+
+  <path d="M1320 362 H1426" fill="none" stroke="#8291a3" stroke-width="2.4" stroke-dasharray="7 5" marker-end="url(#arrow-gray)"/>
+  <rect x="1342" y="334" width="68" height="22" rx="11" fill="#f5f8fc"/>
+  <text class="flow-label" x="1376" y="349" text-anchor="middle">OIDC</text>
+
+  <!-- Network relationship and legend -->
+  <rect x="248" y="960" width="1122" height="67" rx="15" fill="#eaf4ff" stroke="#b8d5ed"/>
+  <path d="M282 993h87" fill="none" stroke="#1683d8" stroke-width="3" marker-end="url(#arrow-blue)"/>
+  <text class="node-copy" x="386" y="998">Primary request / data flow</text>
+  <path d="M608 993h87" fill="none" stroke="#8291a3" stroke-width="2.4" stroke-dasharray="7 5" marker-end="url(#arrow-gray)"/>
+  <text class="node-copy" x="712" y="998">Identity, telemetry or supporting flow</text>
+  <rect x="1026" y="979" width="20" height="20" rx="5" fill="#fff" stroke="#1683d8" stroke-width="2"/>
+  <text class="node-copy" x="1057" y="995">Hub ↔ spoke VNet peering</text>
+  <text class="small" x="280" y="1018">Hub-owned DNS zones link to both VNets; spoke-service private endpoints use the dedicated hub VNet subnet.</text>
+
+  <rect x="1400" y="960" width="296" height="67" rx="15" fill="#fff" stroke="#d3dfeb"/>
+  <text class="small" x="1548" y="986" text-anchor="middle">Architecture represented from</text>
+  <text class="small" x="1548" y="1007" text-anchor="middle">the repository Terraform configuration</text>
+</svg>

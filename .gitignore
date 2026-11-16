@@ -426,3 +426,29 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+.github/.DS_Store
+.DS_Store
+
+# Terraform working data and generated artifacts
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+*.plan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Local variable files may contain secrets. Keep environment configuration versioned.
+*.tfvars
+*.tfvars.json
+!terraform/ibex-infra/environments/*.tfvars
+!terraform/ibex-infra/environments/*.tfvars.json
+
+# Keep .terraform.lock.hcl versioned to pin provider selections.
