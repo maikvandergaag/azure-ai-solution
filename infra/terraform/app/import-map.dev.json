@@ -1,3 +1,156 @@
 {
-  "imports": []
+  "imports": [
+    {
+      "address": "azurerm_resource_group.app",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-chat-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_resource_group.hub",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01"
+    },
+    {
+      "address": "azapi_resource.certificate_order[0]",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-chat-dev-sdc-01/providers/Microsoft.CertificateRegistration/certificateOrders/certdbschatdevsdc01"
+    },
+    {
+      "address": "azurerm_cognitive_account.foundry",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-chat-dev-sdc-01/providers/Microsoft.CognitiveServices/accounts/aif-dbs-chat-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_postgresql_flexible_server.app",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-chat-dev-sdc-01/providers/Microsoft.DBforPostgreSQL/flexibleServers/psql-dbs-chat-dev-sdc-01-4541"
+    },
+    {
+      "address": "azurerm_application_insights.app",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-chat-dev-sdc-01/providers/Microsoft.Insights/components/appi-dbs-chat-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_key_vault.app",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-chat-dev-sdc-01/providers/Microsoft.KeyVault/vaults/kv-dbs-chat-dev-sdc-4541"
+    },
+    {
+      "address": "azurerm_user_assigned_identity.environment",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-chat-dev-sdc-01/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-dbs-chat-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_network_security_group.aca",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-chat-dev-sdc-01/providers/Microsoft.Network/networkSecurityGroups/nsg-cae-dbs-chat-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_private_endpoint.foundry",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-chat-dev-sdc-01/providers/Microsoft.Network/privateEndpoints/pep-aif-dbs-chat-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_private_endpoint.postgres",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-chat-dev-sdc-01/providers/Microsoft.Network/privateEndpoints/pep-psql-dbs-chat-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_virtual_network.app",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-chat-dev-sdc-01/providers/Microsoft.Network/virtualNetworks/vnet-dbs-chat-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_log_analytics_workspace.app",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-chat-dev-sdc-01/providers/Microsoft.OperationalInsights/workspaces/log-dbs-chat-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_storage_account.app",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-chat-dev-sdc-01/providers/Microsoft.Storage/storageAccounts/stdbschatdevsdc014541"
+    },
+    {
+      "address": "azapi_resource.apim",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.ApiManagement/service/apim-dbs-hub-dev-sdc-01-504a"
+    },
+    {
+      "address": "azurerm_application_insights.hub",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Insights/components/appi-dbs-hub-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_user_assigned_identity.app_gateway",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-agw-dbs-hub-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_network_security_group.apim",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/networkSecurityGroups/nsg-apim-dbs-hub-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_private_dns_zone.apim",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/privateDnsZones/azure-api.net"
+    },
+    {
+      "address": "azurerm_private_dns_zone.private_link[\"privatelink.cognitiveservices.azure.com\"]",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/privateDnsZones/privatelink.cognitiveservices.azure.com"
+    },
+    {
+      "address": "azurerm_private_dns_zone.private_link[\"privatelink.openai.azure.com\"]",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/privateDnsZones/privatelink.openai.azure.com"
+    },
+    {
+      "address": "azurerm_private_dns_zone.private_link[\"privatelink.postgres.database.azure.com\"]",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/privateDnsZones/privatelink.postgres.database.azure.com"
+    },
+    {
+      "address": "azurerm_private_dns_zone.private_link[\"privatelink.services.ai.azure.com\"]",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/privateDnsZones/privatelink.services.ai.azure.com"
+    },
+    {
+      "address": "azurerm_private_dns_zone_virtual_network_link.apim_spoke",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/privateDnsZones/azure-api.net/virtualNetworkLinks/link-vnet-dbs-chat-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_private_dns_zone_virtual_network_link.spoke[\"privatelink.cognitiveservices.azure.com\"]",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/privateDnsZones/privatelink.cognitiveservices.azure.com/virtualNetworkLinks/link-vnet-dbs-chat-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_private_dns_zone_virtual_network_link.spoke[\"privatelink.openai.azure.com\"]",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/privateDnsZones/privatelink.openai.azure.com/virtualNetworkLinks/link-vnet-dbs-chat-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_private_dns_zone_virtual_network_link.spoke[\"privatelink.postgres.database.azure.com\"]",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/privateDnsZones/privatelink.postgres.database.azure.com/virtualNetworkLinks/link-vnet-dbs-chat-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_private_dns_zone_virtual_network_link.spoke[\"privatelink.services.ai.azure.com\"]",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/privateDnsZones/privatelink.services.ai.azure.com/virtualNetworkLinks/link-vnet-dbs-chat-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_private_dns_zone_virtual_network_link.apim_hub",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/privateDnsZones/azure-api.net/virtualNetworkLinks/link-vnet-dbs-hub-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_private_dns_zone_virtual_network_link.private_link_hub[\"privatelink.cognitiveservices.azure.com\"]",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/privateDnsZones/privatelink.cognitiveservices.azure.com/virtualNetworkLinks/link-vnet-dbs-hub-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_private_dns_zone_virtual_network_link.private_link_hub[\"privatelink.openai.azure.com\"]",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/privateDnsZones/privatelink.openai.azure.com/virtualNetworkLinks/link-vnet-dbs-hub-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_private_dns_zone_virtual_network_link.private_link_hub[\"privatelink.postgres.database.azure.com\"]",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/privateDnsZones/privatelink.postgres.database.azure.com/virtualNetworkLinks/link-vnet-dbs-hub-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_private_dns_zone_virtual_network_link.private_link_hub[\"privatelink.services.ai.azure.com\"]",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/privateDnsZones/privatelink.services.ai.azure.com/virtualNetworkLinks/link-vnet-dbs-hub-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_public_ip.app_gateway",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/publicIPAddresses/pip-agw-dbs-hub-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_public_ip.apim",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/publicIPAddresses/pip-apim-dbs-hub-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_route_table.apim",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/routeTables/rt-apim-dbs-hub-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_virtual_network.hub",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.Network/virtualNetworks/vnet-dbs-hub-dev-sdc-01"
+    },
+    {
+      "address": "azurerm_log_analytics_workspace.hub",
+      "id": "/subscriptions/9b3d25d9-4293-43c7-a0af-55e6e34685ee/resourceGroups/rg-dbs-hub-dev-sdc-01/providers/Microsoft.OperationalInsights/workspaces/log-dbs-hub-dev-sdc-01"
+    }
+  ]
 }
