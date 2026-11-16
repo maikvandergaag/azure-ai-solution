@@ -107,6 +107,29 @@ Terraform manages the infrastructure, the Entra ID app (including admin consent 
 
    - Optionally disable the default Ollama connection in **Admin Settings → Connections** to avoid connection errors in the logs.
 
+## Import existing resources
+
+Use [the import workflow](../../.github/workflows/import-terraform-state.yml) to adopt resources that already exist in Azure:
+
+1. Run the workflow with the `discover` action and provide the app and hub resource group names. It uploads an Azure Resource Graph inventory as an artifact and does not change infrastructure or Terraform state.
+2. Review the inventory and add exact Terraform address and resource ID pairs to [`app/import-map.dev.json`](app/import-map.dev.json). For example:
+
+   ```json
+   {
+     "imports": [
+       {
+         "address": "azurerm_resource_group.app",
+         "id": "/subscriptions/<subscription-id>/resourceGroups/<app-resource-group>"
+       }
+     ]
+   }
+   ```
+
+3. Commit the reviewed manifest, then run the workflow with the `import` action. Preflight shows which entries are already tracked and which are pending. The `Development-Apply` environment approval gates imports into the remote state; the workflow does not apply infrastructure changes.
+4. Run the deployment workflow with the `plan` action and review any drift before applying.
+
+Discovery lists Azure Resource Manager resources in the two specified resource groups; it does not discover Microsoft Entra resources. Add Entra resources manually to the manifest using their provider-specific import IDs. Only include resources with matching Terraform resource blocks and exact addresses, including any `for_each` or `count` indices. The normal Terraform plan is the final check that imported objects match this configuration.
+
 ## CI/CD with GitHub Actions
 
 [`.github/workflows/deploy-azure.yml`](../../.github/workflows/deploy-azure.yml) and [`.github/workflows/validate-terraform.yml`](../../.github/workflows/validate-terraform.yml) target only development. They authenticate to Azure with OpenID Connect (federated credentials), so no client secret is stored.

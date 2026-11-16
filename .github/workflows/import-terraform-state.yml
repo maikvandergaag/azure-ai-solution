@@ -1,0 +1,278 @@
+name: Import existing infrastructure
+run-name: "${{ github.ref_name }} - Terraform import - Development"
+
+on:
+    workflow_dispatch:
+        inputs:
+            action:
+                description: Import action
+                required: true
+                default: discover
+                type: choice
+                options: [discover, import]
+            app_resource_group:
+                description: App resource group (discovery only)
+                required: false
+                type: string
+            hub_resource_group:
+                description: Hub resource group (discovery only)
+                required: false
+                type: string
+
+permissions:
+    contents: read
+
+concurrency:
+    group: terraform-import-development
+    cancel-in-progress: false
+
+env:
+    TERRAFORM_WORKING_DIR: infra/terraform/app
+    TERRAFORM_VERSION: 1.16.4
+    TERRAFORM_VAR_FILE: environment/dev.tfvars
+    TF_STATE_KEY: ibex-infra-dev.tfstate
+
+jobs:
+    discover:
+        name: Discover Azure resources
+        if: inputs.action == 'discover'
+        runs-on: ubuntu-latest
+        environment: Development
+        permissions:
+            id-token: write
+            contents: read
+        env:
+            ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+            ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+            ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+            APP_RESOURCE_GROUP: ${{ inputs.app_resource_group }}
+            HUB_RESOURCE_GROUP: ${{ inputs.hub_resource_group }}
+        steps:
+            - name: Azure login
+              uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+              with:
+                  client-id: ${{ vars.AZURE_CLIENT_ID }}
+                  tenant-id: ${{ vars.AZURE_TENANT_ID }}
+                  subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+            - name: Validate discovery scope
+              run: |
+                  set -euo pipefail
+                  [[ "$APP_RESOURCE_GROUP" =~ ^[A-Za-z0-9._()-]+$ ]] || {
+                    echo "::error::Provide a valid app resource group name."
+                    exit 1
+                  }
+                  [[ "$HUB_RESOURCE_GROUP" =~ ^[A-Za-z0-9._()-]+$ ]] || {
+                    echo "::error::Provide a valid hub resource group name."
+                    exit 1
+                  }
+
+            - name: Install Resource Graph extension
+              run: az extension add --name resource-graph --yes
+
+            - name: Discover resources
+              run: |
+                  set -euo pipefail
+                  query="Resources | where resourceGroup in~ ('$APP_RESOURCE_GROUP', '$HUB_RESOURCE_GROUP') | project id, name, type, resourceGroup | order by resourceGroup asc, type asc, name asc"
+                  az graph query \
+                    --graph-query "$query" \
+                    --subscriptions "$ARM_SUBSCRIPTION_ID" \
+                    --first 1000 \
+                    --query "data[].{id:id, name:name, type:type, resourceGroup:resourceGroup}" \
+                    --output json > terraform-import-candidates.json
+                  count="$(jq 'length' terraform-import-candidates.json)"
+                  {
+                    echo "## Azure resource discovery"
+                    echo
+                    echo "Found **$count** ARM resources in the specified app and hub resource groups."
+                    echo "Review the uploaded candidate list and add only matching Terraform addresses to \`$TERRAFORM_WORKING_DIR/import-map.dev.json\`."
+                    echo "This inventory does not include Microsoft Entra resources."
+                  } >> "$GITHUB_STEP_SUMMARY"
+
+            - name: Upload resource inventory
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+              with:
+                  name: terraform-import-candidates
+                  path: terraform-import-candidates.json
+                  retention-days: 7
+                  if-no-files-found: error
+
+    import-preflight:
+        name: Review import manifest
+        if: inputs.action == 'import'
+        runs-on: ubuntu-latest
+        environment: Development
+        permissions:
+            id-token: write
+            contents: read
+        env:
+            ARM_USE_OIDC: true
+            ARM_USE_AZUREAD: true
+            ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+            ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+            ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+            TF_STATE_SUBSCRIPTION_ID: ${{ vars.TF_STATE_SUBSCRIPTION_ID }}
+            TF_STATE_RESOURCE_GROUP: ${{ vars.TF_STATE_RESOURCE_GROUP }}
+            TF_STATE_STORAGE_ACCOUNT: ${{ vars.TF_STATE_STORAGE_ACCOUNT }}
+            TF_STATE_CONTAINER: ${{ vars.TF_STATE_CONTAINER }}
+            MANIFEST_PATH: import-map.dev.json
+        outputs:
+          pending: ${{ steps.state.outputs.pending }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            - name: Azure login
+              uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+              with:
+                  client-id: ${{ vars.AZURE_CLIENT_ID }}
+                  tenant-id: ${{ vars.AZURE_TENANT_ID }}
+                  subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+            - name: Set up Terraform
+              uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+              with:
+                  terraform_version: ${{ env.TERRAFORM_VERSION }}
+                  terraform_wrapper: false
+
+            - name: Validate import manifest
+              working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
+              run: |
+                  set -euo pipefail
+                  jq -e '
+                    (.imports | type == "array" and length > 0) and
+                    ([.imports[].address] | length == (unique | length)) and
+                    ([.imports[].id] | length == (unique | length)) and
+                    all(.imports[];
+                      (.address | type == "string" and length > 0 and (contains("\t") | not) and (contains("\n") | not)) and
+                      (.id | type == "string" and startswith("/"))
+                    )
+                  ' "$MANIFEST_PATH" > /dev/null || {
+                    echo "::error::$MANIFEST_PATH must contain non-empty imports with unique addresses and IDs."
+                    exit 1
+                  }
+
+            - name: Initialize Terraform backend
+              working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
+              run: |
+                  terraform init -input=false \
+                    -backend-config="resource_group_name=$TF_STATE_RESOURCE_GROUP" \
+                    -backend-config="storage_account_name=$TF_STATE_STORAGE_ACCOUNT" \
+                    -backend-config="container_name=$TF_STATE_CONTAINER" \
+                    -backend-config="key=$TF_STATE_KEY" \
+                    -backend-config="subscription_id=$TF_STATE_SUBSCRIPTION_ID" \
+                    -backend-config="use_azuread_auth=true" \
+                    -backend-config="use_oidc=true"
+
+            - name: Check state and summarize imports
+              id: state
+              working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
+              run: |
+                  set -euo pipefail
+                  terraform state list -no-color > current-state.txt
+                  total="$(jq '.imports | length' "$MANIFEST_PATH")"
+                  already=0
+                  pending=0
+                  while IFS=$'\t' read -r address resource_id; do
+                    if grep -Fqx -- "$address" current-state.txt; then
+                      already=$((already + 1))
+                    else
+                      already_at="$(terraform state list -no-color -id="$resource_id" || true)"
+                      if [ -n "$already_at" ]; then
+                        echo "::error::Resource ID '$resource_id' is already tracked at '$already_at', not '$address'."
+                        exit 1
+                      fi
+                      pending=$((pending + 1))
+                    fi
+                  done < <(jq -r '.imports[] | [.address, .id] | @tsv' "$MANIFEST_PATH")
+                  {
+                    echo "## Terraform import preflight"
+                    echo
+                    echo "Manifest entries: **$total**"
+                    echo "Already in state (will skip): **$already**"
+                    echo "Pending import after approval: **$pending**"
+                    echo
+                    echo "Review \`$MANIFEST_PATH\` and the target state before approving the \`Development-Apply\` job."
+                  } >> "$GITHUB_STEP_SUMMARY"
+                  echo "pending=$pending" >> "$GITHUB_OUTPUT"
+
+    import:
+        name: Import resources into Terraform state
+        needs: import-preflight
+        if: inputs.action == 'import' && needs.import-preflight.outputs.pending != '0'
+        runs-on: ubuntu-latest
+        environment: Development-Apply
+        permissions:
+            id-token: write
+            contents: read
+        env:
+            ARM_USE_OIDC: true
+            ARM_USE_AZUREAD: true
+            ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+            ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+            ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+            TF_STATE_SUBSCRIPTION_ID: ${{ vars.TF_STATE_SUBSCRIPTION_ID }}
+            TF_STATE_RESOURCE_GROUP: ${{ vars.TF_STATE_RESOURCE_GROUP }}
+            TF_STATE_STORAGE_ACCOUNT: ${{ vars.TF_STATE_STORAGE_ACCOUNT }}
+            TF_STATE_CONTAINER: ${{ vars.TF_STATE_CONTAINER }}
+            TF_VAR_postgres_admin_password: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
+            TF_VAR_webui_secret_key: ${{ secrets.WEBUI_SECRET_KEY }}
+            MANIFEST_PATH: import-map.dev.json
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            - name: Azure login
+              uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+              with:
+                  client-id: ${{ vars.AZURE_CLIENT_ID }}
+                  tenant-id: ${{ vars.AZURE_TENANT_ID }}
+                  subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+            - name: Set up Terraform
+              uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+              with:
+                  terraform_version: ${{ env.TERRAFORM_VERSION }}
+                  terraform_wrapper: false
+
+            - name: Initialize Terraform backend
+              working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
+              run: |
+                  terraform init -input=false \
+                    -backend-config="resource_group_name=$TF_STATE_RESOURCE_GROUP" \
+                    -backend-config="storage_account_name=$TF_STATE_STORAGE_ACCOUNT" \
+                    -backend-config="container_name=$TF_STATE_CONTAINER" \
+                    -backend-config="key=$TF_STATE_KEY" \
+                    -backend-config="subscription_id=$TF_STATE_SUBSCRIPTION_ID" \
+                    -backend-config="use_azuread_auth=true" \
+                    -backend-config="use_oidc=true"
+
+            - name: Import missing resources
+              working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
+              run: |
+                  set -euo pipefail
+                  terraform state list -no-color > current-state.txt
+                  imported=0
+                  skipped=0
+                  while IFS=$'\t' read -r address resource_id; do
+                    if grep -Fqx -- "$address" current-state.txt; then
+                      echo "Skipping already tracked address: $address"
+                      skipped=$((skipped + 1))
+                      continue
+                    fi
+                    already_at="$(terraform state list -no-color -id="$resource_id" || true)"
+                    if [ -n "$already_at" ]; then
+                      echo "::error::Resource ID '$resource_id' is already tracked at '$already_at', not '$address'."
+                      exit 1
+                    fi
+                    terraform import -input=false -var-file="$TERRAFORM_VAR_FILE" "$address" "$resource_id"
+                    imported=$((imported + 1))
+                  done < <(jq -r '.imports[] | [.address, .id] | @tsv' "$MANIFEST_PATH")
+                  {
+                    echo "## Terraform state import complete"
+                    echo
+                    echo "Imported: **$imported**"
+                    echo "Skipped as already tracked: **$skipped**"
+                    echo
+                    echo "Run the deployment workflow with the \\`plan\\` action to review configuration drift before any apply."
+                  } >> "$GITHUB_STEP_SUMMARY"
