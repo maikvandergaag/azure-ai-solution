@@ -46,7 +46,6 @@ jobs:
             TARGET_ENVIRONMENT: Development
             TF_VAR_postgres_admin_password: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
             TF_VAR_webui_secret_key: ${{ secrets.WEBUI_SECRET_KEY }}
-            TF_VAR_certificate_pfx_base64: ${{ secrets.CERTIFICATE_PFX_BASE64 }}
             ACTION: ${{ inputs.action }}
         steps:
             - name: Checkout repository
@@ -191,7 +190,6 @@ jobs:
             TARGET_ENVIRONMENT: Development
             TF_VAR_postgres_admin_password: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
             TF_VAR_webui_secret_key: ${{ secrets.WEBUI_SECRET_KEY }}
-            TF_VAR_certificate_pfx_base64: ${{ secrets.CERTIFICATE_PFX_BASE64 }}
         steps:
             - name: Checkout repository
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
